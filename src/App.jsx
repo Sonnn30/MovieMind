@@ -1,10 +1,32 @@
-import { useState } from 'react'
+import React from 'react'
+import Navbar from './Components/Navbar'
+import Header from './Components/Header'
+import Search from './Components/Search'
+import About from './Components/About'
+import Footer from './Components/Footer'
 
-function App() {
-
+const App = () => {
   return (
     <>
-    <h1>halo </h1>
+    
+    <Navbar />
+    
+    <div id="home">
+      <Header />
+    </div>
+
+    <div id="search">
+      <Search />
+    </div>
+
+    <div id="about">
+      <About />
+    </div>
+
+    <div id='contact'>
+      <Footer />
+    </div>
+
     </>
   )
 }
