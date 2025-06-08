@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-function SearchResults({ results, hasSearched, onMovieClick }) {
+function SearchResults({ results, hasSearched, setSelectedTitle }) {
   if (!hasSearched) return null;
 
   if (results.length > 0) {
@@ -8,7 +8,12 @@ function SearchResults({ results, hasSearched, onMovieClick }) {
       <div className="w-full max-w-[700px] mt-8 mx-auto px-4">
         <ul className="space-y-6 flex flex-col items-center">
           {results.map((movie, index) => (
-            <MovieItem key={index} movie={movie} onClick={() => onMovieClick(movie)} />
+            <MovieItem
+              key={index}
+              movie={movie}
+              onClick={() => setSelectedTitle(movie.title)}
+              setSelectedTitle={setSelectedTitle}
+            />
           ))}
         </ul>
       </div>
@@ -22,12 +27,16 @@ function SearchResults({ results, hasSearched, onMovieClick }) {
   );
 }
 
-function MovieItem({ movie, onClick }) {
+function MovieItem({ movie, onClick, setSelectedTitle }) {
   const [showDetails, setShowDetails] = useState(false);
 
   const handleClick = () => {
     setShowDetails(!showDetails);
-    onClick(); // Kirim movie ke Search
+    if (!showDetails) {
+      onClick(); // Kirim movie ke Search
+    } else {
+      setSelectedTitle(null);
+    }
   };
 
   return (
@@ -38,26 +47,36 @@ function MovieItem({ movie, onClick }) {
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') handleClick();
+        if (e.key === "Enter" || e.key === " ") handleClick();
       }}
     >
-      <div className={`transition-all duration-500 ease-in-out ${showDetails ? 'max-h-[1000px]' : 'max-h-[80px] overflow-hidden'}`}>
+      <div
+        className={`transition-all duration-500 ease-in-out ${
+          showDetails ? "max-h-[1000px]" : "max-h-[80px] overflow-hidden"
+        }`}
+      >
         {!showDetails ? (
           <>
             <p className="text-[14px] text-center mb-2">{movie.title}</p>
             <p className="text-sm text-gray-700 text-center font-medium">
-              {new Date(movie.release_date).getFullYear()} | {movie.genre} | {movie.rating}
+              {new Date(movie.release_date).getFullYear()} | {movie.genres} |{" "}
+              {movie.release_date}
             </p>
           </>
         ) : (
           <div className="text-left text-sm text-gray-800 space-y-1 mt-1">
-            <p><strong>Title:</strong> {movie.title}</p>
-            <p><strong>Genre:</strong> {movie.genre}</p>
-            <p><strong>Release date:</strong> {movie.release_date}</p>
-            <p><strong>Rating:</strong> {movie.rating}</p>
-            <p><strong>Duration:</strong> {movie.duration}</p>
-            <p><strong>Overview:</strong> {movie.overview}</p>
-            <p><strong>Cast:</strong> {movie.cast}</p>
+            <p>
+              <strong>Title:</strong> {movie.title}
+            </p>
+            <p>
+              <strong>Genre:</strong> {movie.genres}
+            </p>
+            <p>
+              <strong>Release date:</strong> {movie.release_date}
+            </p>
+            <p>
+              <strong>Overview:</strong> {movie.overview}
+            </p>
           </div>
         )}
       </div>
@@ -66,5 +85,3 @@ function MovieItem({ movie, onClick }) {
 }
 
 export default SearchResults;
-
-
