@@ -1,33 +1,30 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-// import { movies as moviesData } from './data'; // data.js untuk debug, comment aja kalau pakai backend
 import SearchResults from './SearchResults';
 import PopUp from './PopUp';
 
+import { movies as localMovies } from './data';
+
 function Search() {
   const [searchTitle, setSearchTitle] = useState('');
-  const [searchGenre, setSearchGenre] = useState('');
   const [suggestionsTitle, setSuggestionsTitle] = useState([]);
-  const [suggestionsGenre, setSuggestionsGenre] = useState([]);
-  const [filteredResults, setFilteredResults] = useState([]);
+  const [results, setResults] = useState([]); // hanya satu state
   const [hasSearched, setHasSearched] = useState(false);
-  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [selectedTitle, setSelectedTitle] = useState(null);
+  // const [movies, setMovies] = useState([]); // uncomment ini buat pake data dari backend
 
-  const [movies, setMovies] = useState([]); // pakai backend jadi state ini diisi hasil fetch
-
+  // Kalau mau pakai fetch backend, uncomment ini dan comment out import
+  /*
   useEffect(() => {
-    // Fetch data dari backend saat komponen mount
-    fetch('/api/movies')  // ganti URL ini sesuai API-mu
+    fetch('/api/movies')
       .then(res => res.json())
-      .then(data => {
-        setMovies(data);
-      })
-      .catch(err => {
-        console.error('Failed to fetch movies from backend:', err);
-        // Kalau mau debug pakai data.js uncomment ini:
-        // setMovies(moviesData);
-      });
+      .then(data => setMovies(data))
+      .catch(err => console.error('Failed to fetch movies:', err));
   }, []);
+  */
+
+  // comment atau hapus aja pas pake data dari backend
+  const movies = localMovies;
 
   const filterSuggestions = (input, list) => {
     const terms = input.toLowerCase().split(' ').filter(Boolean);
@@ -46,39 +43,61 @@ function Search() {
     }
   };
 
-  const handleSearchGenre = (e) => {
-    const value = e.target.value;
-    setSearchGenre(value);
-    if (value.trim() === '') {
-      setSuggestionsGenre([]);
-    } else {
-      // Asumsikan kamu punya list genre statis
-      const genres = ['Action', 'Drama', 'Comedy', 'Thriller', 'Romance']; 
-      setSuggestionsGenre(filterSuggestions(value, genres));
+  const getAllRatingsFromLocalStorage = () => {
+    const ratings = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key.startsWith('rating-')) {
+        const title = key.replace('rating-', '');
+        const score = parseFloat(localStorage.getItem(key));
+        if (!isNaN(score)) {
+          ratings.push({ title, rating: score });
+        }
+      }
     }
+    return ratings;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const titleInput = searchTitle.toLowerCase().trim();
-    const genreInput = searchGenre.toLowerCase().trim();
 
-    const filtered = movies.filter(movie => {
-      const titleMatch = movie.title.toLowerCase().includes(titleInput);
-      const genreMatch = movie.genre.toLowerCase().includes(genreInput);
-      return titleMatch && genreMatch;
-    });
+    const filtered = movies.filter(movie =>
+      movie.title.toLowerCase().includes(titleInput)
+    );
 
-    setFilteredResults(filtered);
+    setResults(filtered);
     setHasSearched(true);
-    setSelectedMovie(null); // reset pop up saat pencarian baru
+    setSelectedTitle(null); // reset popup
+
+    const ratings = getAllRatingsFromLocalStorage();
+    const requestBody = {
+      n_items: 3,
+      ratings,
+    };
+
+    // fetch backend 
+    /*
+    try {
+      const res = await fetch('http://localhost:5000/api/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+      });
+      const data = await res.json();
+      console.log('Rekomendasi dari backend:', data);
+    } catch (err) {
+      console.error('Gagal fetch rekomendasi:', err);
+    }
+    */
   };
+
+  const selectedMovie = results.find(m => m.title === selectedTitle);
 
   return (
     <div>
       <div className="bg-white mx-[12%] lg:mx-[25%] flex flex-col items-center justify-center p-8 shadow-[0_0_10px_rgba(0.4,0.4,0.4,0.4)] mb-10">
         <form className="w-full lg:w-[600px] space-y-6 relative" onSubmit={handleSubmit}>
-          {/* Input Judul */}
           <div className="relative">
             <h1 className="text-lg mb-5 mt-7">Movie Title</h1>
             <input
@@ -106,10 +125,9 @@ function Search() {
             )}
           </div>
 
-          {/* Tombol Submit */}
           <button
             type="submit"
-            className="bg-black text-white p-4 mt-3 mb-5 w-full rounded flex items-center justify-center gap-2 hover: cursor-pointer"
+            className="bg-black text-white p-4 mt-3 mb-5 w-full rounded flex items-center justify-center gap-2"
           >
             <img src="search.svg" alt="Search" className="w-5 h-5" />
             <span>Find Similar Movie</span>
@@ -117,26 +135,20 @@ function Search() {
         </form>
       </div>
 
-      {/* Hasil dan Popup dibungkus flex */}
       <div className="flex flex-col lg:flex-row mx-[12%] lg:mx-[25%] gap-6">
         <div className="flex-1">
           <SearchResults
-            results={filteredResults}
+            results={results}
             hasSearched={hasSearched}
             onMovieClick={(movie) => {
-              if (selectedMovie?.title === movie.title) {
-                return; // kalau klik movie yg sama, gak perlu buka popup baru
-              }
-              setSelectedMovie(null);
-              setTimeout(() => {
-                setSelectedMovie(movie);
-              }, 0);
+              setSelectedTitle(movie.title);
             }}
           />
         </div>
+
         {selectedMovie && (
           <div className="block fixed right-[5%] top-[180px] z-50 w-[280px] lg:right-[5%] lg:top-[180px]">
-            <PopUp movie={selectedMovie} onClose={() => setSelectedMovie(null)} />
+            <PopUp movie={selectedMovie} onClose={() => setSelectedTitle(null)} />
           </div>
         )}
       </div>
@@ -145,3 +157,4 @@ function Search() {
 }
 
 export default Search;
+
