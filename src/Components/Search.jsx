@@ -10,6 +10,7 @@ function Search() {
   const [selectedTitle, setSelectedTitle] = useState(null);
   const [movies, setMovies] = useState([]); // uncomment ini buat pake data dari backend
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const filterSuggestions = (input, list) => {
     const terms = input.toLowerCase().split(" ").filter(Boolean);
@@ -60,6 +61,7 @@ function Search() {
       title: titleInput,
     };
     // fetch backend
+    setIsLoading(true);
     try {
       const res = await fetch("http://127.0.0.1:5000/api/predict", {
         method: "POST",
@@ -70,6 +72,8 @@ function Search() {
       setMovies(data.data);
     } catch (err) {
       console.error("Gagal fetch rekomendasi:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -134,7 +138,7 @@ function Search() {
           />
         </div>
 
-        {selectedMovie && (
+        {selectedMovie && !isLoading && (
           <div className="block fixed right-[5%] top-[180px] z-50 w-[280px] lg:right-[5%] lg:top-[180px]">
             <PopUp
               movie={selectedMovie}
