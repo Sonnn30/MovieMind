@@ -4,31 +4,57 @@ import React, { useEffect, useState } from 'react';
 function PopUp({ movie, onClose }) {
   const [rating, setRating] = useState('');
 
+  // Load rating dari localStorage saat movie berubah
   useEffect(() => {
-    const savedRating = localStorage.getItem(`rating-${movie.title}`);
-    if (savedRating) {
-      setRating(savedRating);
+    const savedRatings = localStorage.getItem('ratings');
+    if (savedRatings) {
+      const ratingsObj = JSON.parse(savedRatings);
+      const savedRating = ratingsObj[`rating-${movie.title}`];
+      if (savedRating !== undefined) {
+        setRating(String(savedRating));
+      } else {
+        setRating('');
+      }
+    } else {
+      setRating('');
     }
   }, [movie]);
 
+  // Simpan rating ke localStorage saat rating berubah
   useEffect(() => {
-    if (rating === '') return;
-
     try {
       const savedRatings = localStorage.getItem('ratings');
       const ratingsObj = savedRatings ? JSON.parse(savedRatings) : {};
-      ratingsObj[`rating-${movie.title}`] = Number(rating);
+
+      if (rating === '') {
+        // Hapus rating kalau input kosong
+        delete ratingsObj[`rating-${movie.title}`];
+      } else {
+        // Simpan rating (pastikan angka)
+        ratingsObj[`rating-${movie.title}`] = Number(rating);
+      }
+
       localStorage.setItem('ratings', JSON.stringify(ratingsObj));
     } catch (error) {
       console.error('Failed to save ratings to localStorage:', error);
     }
   }, [rating, movie.title]);
 
+  // Handle perubahan input, validasi angka 0-5
   const handleChange = (e) => {
     const value = e.target.value;
-    if (/^\d{0,2}$/.test(value)) {
-      const numeric = parseInt(value, 10);
-      if (value === '' || (numeric >= 0 && numeric <= 10)) {
+
+    // Boleh kosong atau angka antara 0-5
+    if (value === '') {
+      setRating('');
+      return;
+    }
+
+    // Cek apakah angka valid dan di range 0-5
+    const numeric = Number(value);
+    if (!isNaN(numeric) && numeric >= 0 && numeric <= 5) {
+      // Untuk mencegah input angka desimal seperti 4.5, kamu bisa cek integer
+      if (Number.isInteger(numeric)) {
         setRating(value);
       }
     }
@@ -45,11 +71,16 @@ function PopUp({ movie, onClose }) {
       </button>
 
       <h2 className="text-lg font-semibold mb-4">
-        Already watch <br /><span className="font-bold">{movie.title}</span>?<br />Rate it now!
+        Already watch <br />
+        <span className="font-bold">{movie.title}</span>?<br />
+        Rate it now!
       </h2>
 
       <input
-        type="text"
+        type="number"
+        min="0"
+        max="5"
+        step="1"
         placeholder="Value"
         value={rating}
         onChange={handleChange}
