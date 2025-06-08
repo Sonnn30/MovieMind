@@ -12,10 +12,17 @@ function PopUp({ movie, onClose }) {
   }, [movie]);
 
   useEffect(() => {
-    if (rating !== '') {
-      localStorage.setItem(`rating-${movie.title}`, rating);
+    if (rating === '') return;
+
+    try {
+      const savedRatings = localStorage.getItem('ratings');
+      const ratingsObj = savedRatings ? JSON.parse(savedRatings) : {};
+      ratingsObj[`rating-${movie.title}`] = Number(rating);
+      localStorage.setItem('ratings', JSON.stringify(ratingsObj));
+    } catch (error) {
+      console.error('Failed to save ratings to localStorage:', error);
     }
-  }, [rating, movie]);
+  }, [rating, movie.title]);
 
   const handleChange = (e) => {
     const value = e.target.value;
