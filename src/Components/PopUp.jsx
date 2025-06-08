@@ -36,24 +36,20 @@ function PopUp({ movie, onClose }) {
   };
 
   // Handle perubahan input, validasi angka 0-5
-  const handleChange = (e) => {
-    const value = e.target.value;
+    const handleChange = (e) => {
+      const value = e.target.value;
 
-    // Boleh kosong atau angka antara 0-5
-    if (!value) {
-      setRating("");
-      return;
-    }
-
-    // Cek apakah angka valid dan di range 0-5
-    const numeric = Number(value);
-    if (!isNaN(numeric) && numeric >= 0 && numeric <= 5) {
-      // Untuk mencegah input angka desimal seperti 4.5, kamu bisa cek integer
-      if (Number.isInteger(numeric)) {
-        setRating(value);
+      if (value === '') {
+        setRating('');
+        return;
       }
-    }
-  };
+
+      const numeric = Number(value);
+      if (!isNaN(numeric) && numeric >= 0 && numeric <= 5) {
+        const rounded = Math.round(numeric * 10) / 10;
+        setRating(String(rounded));
+      }
+    };
 
   return (
     <div className="relative bg-white p-6 rounded-3xl shadow-2xl text-center">
@@ -75,10 +71,16 @@ function PopUp({ movie, onClose }) {
         type="number"
         min="0"
         max="5"
-        step="1"
+        step="0.1" 
         placeholder="Value"
         value={rating}
         onChange={handleChange}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && rating !== '') {
+            alert(`Rating untuk ${movie.title} berhasil disimpan!`);
+            onClose();
+          }
+        }}
         className="w-full px-4 py-2 rounded-2xl border bg-white text-gray-600 text-center"
       />
     </div>

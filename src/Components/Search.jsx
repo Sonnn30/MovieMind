@@ -117,7 +117,7 @@ function Search() {
 
           <button
             type="submit"
-            className="bg-black text-white p-4 mt-3 mb-5 w-full rounded flex items-center justify-center gap-2"
+            className="bg-black text-white p-4 mt-3 mb-5 w-full rounded flex items-center justify-center gap-2 cursor-pointer"
           >
             <img src="search.svg" alt="Search" className="w-5 h-5" />
             <span>Find Similar Movie</span>
