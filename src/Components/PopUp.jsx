@@ -1,52 +1,47 @@
-'use client';
-import React, { useEffect, useState } from 'react';
+"use client";
+import React, { useEffect, useState } from "react";
 
 function PopUp({ movie, onClose }) {
-  const [rating, setRating] = useState('');
+  const [rating, setRating] = useState("");
 
   // Load rating dari localStorage saat movie berubah
   useEffect(() => {
-    const savedRatings = localStorage.getItem('ratings');
+    const savedRatings = localStorage.getItem("ratings");
     if (savedRatings) {
       const ratingsObj = JSON.parse(savedRatings);
-      const savedRating = ratingsObj[`rating-${movie.title}`];
-      if (savedRating !== undefined) {
+      const savedRating = ratingsObj[`${movie.id}`];
+      if (savedRating) {
         setRating(String(savedRating));
       } else {
-        setRating('');
+        setRating("");
       }
     } else {
-      setRating('');
+      setRating("");
     }
   }, [movie]);
 
-  // Simpan rating ke localStorage saat rating berubah
-  useEffect(() => {
-    try {
-      const savedRatings = localStorage.getItem('ratings');
-      const ratingsObj = savedRatings ? JSON.parse(savedRatings) : {};
-
-      if (rating === '') {
-        // Hapus rating kalau input kosong
-        delete ratingsObj[`rating-${movie.title}`];
+  const closePopup = () => {
+    if (rating) {
+      let savedRating = localStorage.getItem("ratings");
+      if (!savedRating) {
+        savedRating = {};
       } else {
-        // Simpan rating (pastikan angka)
-        ratingsObj[`rating-${movie.title}`] = Number(rating);
+        savedRating = JSON.parse(savedRating);
       }
 
-      localStorage.setItem('ratings', JSON.stringify(ratingsObj));
-    } catch (error) {
-      console.error('Failed to save ratings to localStorage:', error);
+      savedRating[`${movie.id}`] = Number(rating);
+      localStorage.setItem("ratings", JSON.stringify(savedRating));
     }
-  }, [rating, movie.title]);
+    onClose();
+  };
 
   // Handle perubahan input, validasi angka 0-5
   const handleChange = (e) => {
     const value = e.target.value;
 
     // Boleh kosong atau angka antara 0-5
-    if (value === '') {
-      setRating('');
+    if (!value) {
+      setRating("");
       return;
     }
 
@@ -63,7 +58,7 @@ function PopUp({ movie, onClose }) {
   return (
     <div className="relative bg-white p-6 rounded-3xl shadow-2xl text-center">
       <button
-        onClick={onClose}
+        onClick={closePopup}
         className="absolute top-3 right-4 text-gray-400 hover:text-black text-lg font-bold"
         aria-label="Close popup"
       >
