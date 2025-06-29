@@ -8,6 +8,7 @@ Run Project:
 3. Ganti address di backend
 4. Nyalain server backend
 5. Front End:
+   
    -. cd MovieMind
    -. npm install
    -. npm run dev
