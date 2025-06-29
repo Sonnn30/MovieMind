@@ -10,5 +10,7 @@ Run Project:
 5. Front End:
    
    -. cd MovieMind
+   
    -. npm install
+   
    -. npm run dev
